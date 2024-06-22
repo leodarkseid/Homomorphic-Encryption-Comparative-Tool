@@ -1,5 +1,5 @@
 [submodule "SEAL-Python"]
-	path = SEAL-Python
+	path = seal/SEAL-Python
 	url = https://github.com/Huelse/SEAL-Python.git
 	branch = main
 
