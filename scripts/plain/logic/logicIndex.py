@@ -38,7 +38,9 @@ class Logic:
                 "id":x[i].client.id, 
                 "name":x[i].client.name, 
                 "plain_balance":x[i].client.balance, 
-                "plain_balance_size":sys.getsizeof(x[i].client.balance), "plain_initialization_time":x[i].client.initTime,
+                "plain_balance_size":sys.getsizeof(x[i].client.balance), 
+                "plain_initialization_time":x[i].client.initTime,
+                "plain_client_size": sys.getsizeof(x[i].client),
                 "plain_client_initialization_ram_cost":self.listOfClient["initData"][i]['mem']
                 }
                 for i in range(len(self.listOfClient["result"]))]
@@ -100,4 +102,32 @@ class Logic:
                         })
                 # print(self.allD)
 
+    def set_credit_score(self, value):
+        for i in range(len(value)):
+            m = Measure()
+            c = self.listOfClient["result"][i]
+            v = value[i]
+            result = m.measure_memory_time(c.add_creditScore, v, desc="set plain credit score")
+            self.allD[i].update({
+                "plain_credit_score":v,
+                "plain_credit_score_size":sys.getsizeof(v),
+                "plain_credit_score_computation_ram_cost":result["memory"],
+                "plain_credit_score_computation_time":result["time"],
+            })
+
+
+    def update_transaction_count(self, value):
+        m = Measure()
+        for i in range(len(value)):
+            c = self.listOfClient["result"][i].client
+            y = c.transactionsCount
+            result = m.measure_memory_time(addVal, a=value[i], b=y, desc="addVal transaction")
+            c.transactionsCount = result["result"]["result"]
+            self.allD[i].update({
+                "plain_transaction_count_size":sys.getsizeof(value),
+                "plain_transaction_count_computation_ram_cost":result["memory"],
+                "plain_transaction_count_computation_time":result["time"],
+            })
+            
+        
     

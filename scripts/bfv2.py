@@ -3,6 +3,16 @@ from Pyfhel import Pyfhel
 import numpy as np
 
 
+def approximate_inverse(enc_b, iterations=10):
+    # Initial guess y0
+    y = HE.encrypt(np.array([1/10]))
+    for i in range(iterations):
+        # y = y * (2 - b * y)
+        b_y = enc_b* y
+        two = HE.encrypt(2.0)
+        two_minus_b_y = two - b_y
+        y = HE.multiply(y, two_minus_b_y)
+    return y
 HE:Pyfhel = Pyfhel()
 
 
@@ -30,13 +40,16 @@ HE.keyGen()
 HE.rotateKeyGen()
 HE.relinKeyGen()
 # Then we encrypt some data
-c = HE.encrypt(np.array([42]))
+c = HE.encrypt(np.array([10]))
 p = HE.encode(np.array([-1]))
 
+
+chec = approximate_inverse(c)
 print("1. Creating serializable objects")
 print(f"  Pyfhel object HE: {HE}")
 print(f"  PyCtxt c=HE.encrypt([42]): {c}")
 print(f"  PyPtxt p=HE.encode([-1]): {p}")
+print('cejck', HE.decrypt(c))
 # xx = cipher4 + np.array([1], dtype=np.int64)
 # print("xxx", xx)
 con_size, con_size_zstd   = HE.sizeof_context(),    HE.sizeof_context(compr_mode="zstd")

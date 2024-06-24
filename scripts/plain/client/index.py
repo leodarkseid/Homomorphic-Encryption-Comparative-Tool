@@ -12,6 +12,8 @@ class ClientObject:
         self.balance = balance
         end_time = time.perf_counter()
         self.initTime = end_time-start_time
+        self.transactionsCount = 0
+        self.creditScore = 0
         
      
 
@@ -22,15 +24,10 @@ class Client:
         end_time = time.perf_counter()
         self.initTime = end_time-start_time
         
-      
-
-    @property
-    def balance(self):
-        return self.client.balance
-
-    @property
-    def id(self):
-        return self.client.id
+    def add_creditScore(self, value, desc:str):
+        result = self.client.creditScore + value
+        self.client.creditScore = min(result, 100)
+        return self.client.creditScore
 
     def genBalance(self):
         num_balances = 10000000

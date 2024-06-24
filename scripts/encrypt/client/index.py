@@ -17,6 +17,7 @@ class ClientObject:
         end_time = time.perf_counter()
         self.initTime = end_time-start_time
 
+
 class Client:
     def __init__(self, id:int, balance:int, he_type: Literal["BGV", "BFV", "CKKS"], desc:str) -> None:
         start_time = time.perf_counter()
@@ -28,8 +29,8 @@ class Client:
                     'scheme': 'BGV',
                     'n': 2**13,
                     't': 65537,
-                    't_bits': 20,
-                    'sec': 128,
+                    't_bits': 54,
+                    'sec': 256,
                     }
             HE.contextGen(**bgv_params) 
             HE.keyGen()
@@ -42,12 +43,14 @@ class Client:
             self.client = ClientObject(id=id, balance=balanceCipherText, HE=HE)
             end_time = time.perf_counter()
             self.initTime = end_time-start_time
+            self.client.creditScore = HE.encryptBGV(np.array([0], dtype=np.int64))
+            self.client.transactionsCount = HE.encryptBGV(np.array([0], dtype=np.int64))
         elif he_type == 'BFV':
             bfv_params = {
                 'scheme': 'BFV',
                 'n': 2**13,
                 't':65537,
-                't_bits':20,
+                't_bits':54,
                 'sec':128
             }
             bal = np.array([balance], dtype=np.int64)
@@ -60,10 +63,12 @@ class Client:
             self.client = ClientObject(id=id, balance=cipherBalance, HE=HE)
             end_time = time.perf_counter()
             self.initTime = end_time-start_time
+            self.client.creditScore = HE.encryptPtxt(HE.encode(np.array([0], dtype=np.int64)))
+            self.client.transactionsCount = HE.encryptPtxt(HE.encode(np.array([0], dtype=np.int64)))
         elif he_type == "CKKS":
             ckks_params = {
                 'scheme':'ckks',
-                'n':8192, 
+                'n':2**13, 
                 'scale':2**30, 
                 'qi_sizes':[60, 30, 30, 30, 60]
                 }
@@ -76,20 +81,24 @@ class Client:
             self.client = ClientObject(id=id, balance=cipherBalance, HE=HE)
             end_time = time.perf_counter()
             self.initTime = end_time-start_time
+            self.client.creditScore = HE.encryptPtxt(HE.encodeFrac(np.array([0], dtype=np.float64)))
+            self.client.transactionsCount = HE.encryptPtxt(HE.encodeFrac(np.array([0], dtype=np.float64)))
 
+    def add_creditScore(self, value,HE, desc:str):
     
+        result = self.client.creditScore + value
+        d100 = HE.encrypt(HE.encode(np.array([100])))
+        if self.greaterThan(result, d100, HE, "add_CreditScore"):
+            self.client.creditScore = d100
+        else:
+            self.client.creditScore = result
+        # self.client.creditScore = min(result, d100)
+        return {'result':self.client.creditScore, "time":0}
 
-    @property
-    def balance(self):
-        return self.client.balance
-
-    @property
-    def he(self) -> Pyfhel:
-        return self.client.HE
-    
-    @property
-    def id(self):
-        return self.client.id
+    def greaterThan(self, x , y, HE, desc:str):
+        result = x - y
+        numba = HE.decrypt(HE.decode(result))
+        return numba > 0
 
     def genBalance(self):
         num_balances = 10000000

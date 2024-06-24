@@ -46,7 +46,8 @@ class Logic:
                     "enc_client_initialization_ram_cost":self.listOfClient["initData"][i]["mem"],
                     "encrypted_balance_size": x[i].client.balance.sizeof_ciphertext(),
                     "encrypted_initialization_time":x[i].client.initTime,
-                    "HE_size": x[i].client.HE
+                    "enc_client_size":sys.getsizeof(x[i].client),
+                    "HE_size": x[i].client.HE.sizeof_context()
                 }for i in range(len(self.listOfClient["result"]))]
             elif he_type == 'BGV':
                 self.allD_BGV = [{
@@ -55,7 +56,8 @@ class Logic:
                     "enc_client_initialization_ram_cost":self.listOfClient["initData"][i]["mem"],
                     "encrypted_balance_size": x[i].client.balance.sizeof_ciphertext(),
                     "encrypted_initialization_time":x[i].client.initTime,
-                    "HE_size": x[i].client.HE
+                    "enc_client_size":sys.getsizeof(x[i].client),
+                    "HE_size": x[i].client.HE.sizeof_context()
                 }for i in range(len(self.listOfClient["result"]))]
             elif he_type == 'CKKS':
                 self.allD_CKKS = [{
@@ -64,7 +66,8 @@ class Logic:
                     "enc_client_initialization_ram_cost":self.listOfClient["initData"][i]["mem"],
                     "encrypted_balance_size": x[i].client.balance.sizeof_ciphertext(),
                     "encrypted_initialization_time":x[i].client.initTime,
-                    "HE_size": x[i].client.HE
+                    "enc_client_size":sys.getsizeof(x[i].client),
+                    "HE_size": x[i].client.HE.sizeof_context()
                 }for i in range(len(self.listOfClient["result"]))]
 
 
@@ -127,7 +130,7 @@ class Logic:
                 # result = c.balance + encryptedProposedDebit['result']
                 result = m.measure_memory_time(subVal, a=c.balance, b=encryptedProposedDebit['result'], desc='Encryption Substraction')
             
-                c.balance = result
+                c.balance = result["result"]["result"]
                 if self.he_type == "BFV":
                     self.allD_BFV[i].update({
                         'enc_debit_amount_size':encryptedProposedDebit["result"].sizeof_ciphertext(),
@@ -188,3 +191,82 @@ class Logic:
             # decrypted = HE.decodeFrac(decryptedPlainTxt)
             return decryptedPlainTxt
         
+    def set_credit_score(self, value):
+        for i in range(len(value)):
+            m = Measure()
+            c = self.listOfClient["result"][i]
+            v = c.client.HE.encrypt(value[i])
+            result = m.measure_memory_time(self.add_creditScore, value =v,HE=c.client.HE,client=c, desc="set enc credit score")
+            # if self.he_type == "BFV":
+            #     result = m.measure_memory_time(self.add_creditScore, v,c.client.HE, desc="set enc credit score")
+            # elif self.he_type == "BGV":
+            #     result = m.measure_memory_time(self.add_creditScore, value=v,HE=c.client.HE, desc="set enc credit score")
+            # elif self.he_type == "CKKS":
+            #     result = m.measure_memory_time(self.add_creditScore, v,c.client.HE, desc="set enc credit score")
+            
+            if self.he_type == "BFV":
+                self.allD_BFV[i].update({
+                "enc_credit_score_size":sys.getsizeof(v),
+                "enc_credit_score_computation_ram_cost":result["memory"],
+                "enc_credit_score_computation_time":result["time"],
+            })
+            elif self.he_type == "BGV":
+                self.allD_BGV[i].update({
+                "enc_credit_score_size":sys.getsizeof(v),
+                "enc_credit_score_computation_ram_cost":result["memory"],
+                "enc_credit_score_computation_time":result["time"],
+            })
+            elif self.he_type == "CKKS":
+                self.allD_CKKS[i].update({
+                    "enc_credit_score_size":sys.getsizeof(v),
+                    "enc_credit_score_computation_ram_cost":result["memory"],
+                    "enc_credit_score_computation_time":result["time"],
+                })
+
+        return result
+        
+    def add_creditScore(self, value,HE,client, desc:str):
+        
+        result = client.client.creditScore + value
+        d100 = HE.encrypt(HE.encode(np.array([100])))
+        if self.greaterThan(x=result, y=d100, HE=HE, desc="add_CreditScore"):
+            client.client.creditScore = d100
+        else:
+            client.client.creditScore = result
+        # self.client.creditScore = min(result, d100)
+        return client.client.creditScore
+
+    def greaterThan(self, x , y, HE, desc:str):
+        result = x - y
+        numba = HE.decrypt(result)
+        return numba.all() > 0
+
+    def update_transaction_count(self, value):
+        m = Measure()
+        for i in range(len(value)):
+            c = self.listOfClient["result"][i].client 
+            v = c.HE.encrypt(c.HE.encode(np.array([value[i]])))
+            y = c.transactionsCount
+            result = m.measure_memory_time(addVal, a=v,b=y,  desc="transaction count update")
+            c.transactionsCount = result["result"]["result"]
+            if self.he_type == "BFV":
+                self.allD_BFV[i].update({
+                "enc_transaction_count_size":sys.getsizeof(v),
+                "enc_transaction_count_computation_ram_cost":result["memory"],
+                "enc_transaction_count_computation_time":result["time"],
+            })
+            elif self.he_type == "BGV":
+                self.allD_BGV[i].update({
+                "enc_transaction_count_size":sys.getsizeof(v),
+                "enc_transaction_count_computation_ram_cost":result["memory"],
+                "enc_transaction_count_computation_time":result["time"],
+            })
+            elif self.he_type == "CKKS":
+                self.allD_CKKS[i].update({
+                "enc_transaction_count_size":sys.getsizeof(v),
+                "enc_transaction_count_computation_ram_cost":result["memory"],
+                "enc_transaction_count_computation_time":result["time"],
+                })
+
+    
+            

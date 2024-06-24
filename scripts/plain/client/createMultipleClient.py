@@ -28,7 +28,7 @@ def createMultiple(balances:list[int],numberOfClients:int = 1) -> Dict[CreateMul
         c = profiler.measure_memory_time(Client, id=i+1, balance=balances[i], desc='Client Initialization') 
         client = c["result"]
         clientsInstance.append(client)
-        initD = {"id":client.id, "time":client.initTime, "mem":c["memory"]}
+        initD = {"id":client.client.id, "time":client.initTime, "mem":c["memory"]}
         initDATA.append(initD)
         initTotalTimer += client.initTime
         initTotalMemory += c["memory"]
