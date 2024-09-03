@@ -1,19 +1,21 @@
 from typing import TypedDict
 
+
 class ResultDict(TypedDict):
     result: any
     time: float
     memory: int
 
+
 class AllData_Type(TypedDict):
-    id:int
+    id: int
     name: str
-    plain_balance : int
-    plain_balance_size : float
-    plain_initialization_time : float
-    encrypted_initialization_time :float
-    encrypted_balance_size : float
-    HE_size : float
+    plain_balance: int
+    plain_balance_size: float
+    plain_initialization_time: float
+    encrypted_initialization_time: float
+    encrypted_balance_size: float
+    HE_size: float
     credit_amount: int
     debit_amount: int
     plain_credit_amount_size: float
@@ -37,15 +39,16 @@ class AllData_Type(TypedDict):
     time_to_decrypt_new_enc_balance_size: float
     enc_client_initialization_ram_cost: float
     client_initialization_ram_cost: float
-    plain_compute_credit_ram_cost:float
-    enc_compute_credit_ram_cost:float
-    plain_compute_debit_ram_cost:float
-    enc_compute_debit_ram_cost:float
+    plain_compute_credit_ram_cost: float
+    enc_compute_credit_ram_cost: float
+    plain_compute_debit_ram_cost: float
+    enc_compute_debit_ram_cost: float
+
 
 class AllData:
     def __init__(self) -> None:
-        self.id=0
-        self.plain_balance=0
+        self.id = 0
+        self.plain_balance = 0
         self.plain_balance_size = 0
         self.encrypted_balance_size = 0
         self.HE_size = 0
@@ -68,4 +71,3 @@ class AllData:
 
     def result(self) -> AllData_Type:
         return self.__dict__
-    

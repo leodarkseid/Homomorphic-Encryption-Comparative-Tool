@@ -5,13 +5,11 @@ from bgvKeyGen import keyGen as bgvGen
 from ckksKeyGen import keyGen as ckksGen
 
 
-
 def genAllkeys():
     start_time = time.time()
-   
+
     # threads = []
 
-   
     # t1 = threading.Thread(target=bfvGen)
     # t2 = threading.Thread(target=bgvGen)
     # t3 = threading.Thread(target=ckksGen)
@@ -22,7 +20,7 @@ def genAllkeys():
 
     # for thread in threads:
     #     thread.start()
-    
+
     # for thread in threads:
     #     thread.join()
 
@@ -31,6 +29,7 @@ def genAllkeys():
     ckksGen()
     end_time = time.time()
     print("end", end_time - start_time)
+
 
 if __name__ == '__main__':
     genAllkeys()

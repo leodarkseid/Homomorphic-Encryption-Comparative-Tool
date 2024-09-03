@@ -5,7 +5,7 @@ __pycache__/
 
 # C extensions
 *.so
-
+all.xlsx
 # Distribution / packaging
 .Python
 build/
@@ -117,6 +117,7 @@ ENV/
 env.bak/
 venv.bak/
 unilag-env
+homo
 
 # Spyder project settings
 .spyderproject
